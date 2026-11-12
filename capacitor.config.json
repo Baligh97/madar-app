@@ -1,0 +1,8 @@
+{
+  "appId": "sa.madar.app",
+  "appName": "مَدار",
+  "webDir": "dist",
+  "backgroundColor": "#0B3C49",
+  "android": { "backgroundColor": "#0B3C49" },
+  "ios": { "contentInset": "never", "backgroundColor": "#0B3C49" }
+}
