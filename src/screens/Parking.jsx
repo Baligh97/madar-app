@@ -25,28 +25,28 @@ export default function Parking() {
     <div className="screen top-safe" data-screen="parking">
       <div className="pad">
         <div className="row between">
-          <div><h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--teal)' }}>{L('دليل المواقف', 'Parking guide')}</h1>
-            <p className="t-sub">{L('التوفر لحظة بلحظة عند المطار والمراسي ونقاط الانطلاق.', 'Live availability at the airport, marinas and departure points.')}</p></div>
+          <div><h1 className="page-title">{L('المواقف', 'Parking')}</h1>
+            <p className="page-sub">{totalFree} {L('موقفًا متاحًا الآن', 'spots free right now')}</p></div>
           <span className="live">{L('مباشر', 'Live')}</span>
         </div>
 
-        <div style={{ marginTop: 12 }}>
-          <MapView height={230} here={state.location} onPin={setOpen}
+        <div style={{ marginTop: 18 }}>
+          <MapView height={300} here={state.location} onPin={setOpen}
             pins={lots.map(l => ({ id: l.id, place: l.place, dx: OFFS[l.id]?.[0], dy: OFFS[l.id]?.[1], color: color(lotAvailable(l, now), l.cap), label: lotAvailable(l, now), active: open === l.id }))} />
         </div>
 
-        <div className="chips scroll" style={{ marginTop: 12 }}>
+        <div className="chips scroll" style={{ marginTop: 16 }}>
           {['shade', 'ev', 'access', 'valet'].map(f => <Chip key={f} icon={f} on={filter.includes(f)} onClick={() => tog(f)} data-filter={f}>{L(FEATS[f])}</Chip>)}
         </div>
 
-        <div className="sec-h" style={{ marginTop: 16 }}><h2 style={{ fontSize: '1.02rem', color: 'var(--teal)' }}>{L('الأقرب إليك', 'Nearest to you')}</h2><span className="t-xs">{totalFree} {L('موقفًا متاحًا', 'free spots')}</span></div>
+        <div className="sec-h" style={{ marginTop: 28 }}><h2>{L('الأقرب إليك', 'Nearest to you')}</h2></div>
         <div className="stack">
           {lots.map(l => {
             const free = lotAvailable(l, now), km = kmBetween(state.location, l.place);
             return (
               <Card key={l.id} onClick={() => { setOpen(l.id); setDays(1); setDay(0); }} data-lot={l.id}>
                 <div className="row">
-                  <IconBox n="parking" tone="mist" />
+                  <IconBox n="parking" tone="mist" size={52} s={26} />
                   <div className="grow">
                     <div className="t-title">{L(l.name)}</div>
                     <div className="t-sub">{km ? L(`${km} كم`, `${km} km`) : L(`${l.walk} دقائق مشيًا`, `${l.walk} min walk`)} · {l.tariff ? <><Money v={l.tariff} /> {L('/ يوم', '/ day')}</> : L('مجانًا', 'Free')}</div>
@@ -54,7 +54,6 @@ export default function Parking() {
                   <div className="center"><div className="num" style={{ color: color(free, l.cap) }}>{free}</div><div className="t-xs">{L(`من ${l.cap}`, `of ${l.cap}`)}</div></div>
                 </div>
                 <div className="avail"><i style={{ width: Math.round(100 * (1 - free / l.cap)) + '%', background: color(free, l.cap) }} /></div>
-                <div className="legs">{l.feats.map(f => <span className="tag" key={f}><Ic n={f} s={12} />{L(FEATS[f])}</span>)}</div>
               </Card>
             );
           })}

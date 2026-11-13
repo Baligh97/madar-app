@@ -20,7 +20,7 @@ export default function Pass({ id, fresh }) {
       <TopBar title={L('تصريح الموقف', 'Parking pass')} sub={fresh ? L('تم حجز موقفك', 'Your spot is reserved') : null} />
       <div className="screen" data-screen="pass">
         <div className="pad stack">
-          <div className="ticket" style={cancelled ? { opacity: .6 } : null}>
+          <div className="ticket light" style={cancelled ? { opacity: .6 } : null}>
             <div className="ticket-top">
               <div className="row between"><div className="row" style={{ gap: 8 }}><Symbol size={34} /><Wordmark size={28} /></div><span className="chip soft" style={{ padding: '6px 12px' }}><Ic n="parking" s={17} style={{ color: 'var(--coral)' }} />{L('موقف', 'Parking')}</span></div>
               <div className="hx" style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--teal)', marginTop: 14 }}>{L(lot.name)}</div>
@@ -38,7 +38,7 @@ export default function Pass({ id, fresh }) {
               <div className="t-xs">{L('امسح الرمز عند بوابة الموقف', 'Scan at the parking gate')}</div>
             </div>
           </div>
-          <MapView height={150} here={state.location} pins={[{ id: lot.id, place: lot.place, color: '#0B3C49', label: 'P' }]} route={state.location !== lot.place ? [state.location, lot.place] : null} />
+          <MapView height={150} here={state.location} pins={[{ id: lot.id, place: lot.place, color: '#EEF7F5', label: '' }]} route={state.location !== lot.place ? [state.location, lot.place] : null} />
           {!cancelled && <div className="row">
             <Btn kind="dark" full icon="nav" onClick={() => say(L(`الموقف على بُعد ${lot.walk} دقائق مشيًا من نقطة الانطلاق`, `The lot is a ${lot.walk}-minute walk from the departure point`))}>{L('الاتجاهات', 'Directions')}</Btn>
             <Btn kind="danger" full onClick={() => setAsk(true)}>{L('إلغاء', 'Cancel')}</Btn>

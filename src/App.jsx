@@ -32,7 +32,7 @@ function Shell() {
         <Screen key={tab} />
         <nav className="tabbar">
           {TABS.map(([id, icon, name]) => (
-            <button key={id} className={tab === id ? 'on' : ''} onClick={() => go(id)} data-tab={id}><Ic n={icon} s={24} />{L(name)}</button>
+            <button key={id} className={tab === id ? 'on' : ''} onClick={() => go(id)} data-tab={id}><Ic n={icon} s={23} /><span>{L(name)}</span></button>
           ))}
         </nav>
         {stack.map(l => { const C = LAYERS[l.name]; return <div className="layer" key={l.key}><C {...l.props} layer /></div>; })}

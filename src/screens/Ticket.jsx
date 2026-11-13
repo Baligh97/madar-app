@@ -39,7 +39,7 @@ export default function Ticket({ id, fresh }) {
       <TopBar title={L('تذكرتك', 'Your ticket')} sub={fresh ? L('تم الحجز بنجاح', 'Booked successfully') : null} right={<button className="round" onClick={share} aria-label={L('مشاركة', 'Share')}><Ic n="share" s={20} /></button>} />
       <div className="screen" data-screen="ticket">
         <div className="pad stack">
-          <div className="ticket" style={cancelled ? { opacity: .6 } : null}>
+          <div className="ticket light" style={cancelled ? { opacity: .6 } : null}>
             <div className="ticket-top">
               <div className="row between">
                 <div className="row" style={{ gap: 8 }}><Symbol size={34} /><Wordmark size={28} /></div>

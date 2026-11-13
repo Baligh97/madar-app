@@ -33,43 +33,37 @@ export default function Transport({ layer, from: pFrom, to: pTo, mode, after }) 
   return (
     <>
       {layer ? <TopBar title={L('احجز تنقّلك', 'Book a transfer')} /> : (
-        <div className="pad top-safe" style={{ paddingBottom: 6 }}><h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--teal)' }}>{L('احجز تنقّلك', 'Book a transfer')}</h1>
-          <p className="t-sub">{L('قارن الوسائل واحجز وادفع في دقائق.', 'Compare, book and pay in minutes.')}</p></div>
+        <div className="pad top-safe" style={{ paddingBottom: 14 }}><h1 className="page-title">{L('احجز تنقّلك', 'Book a transfer')}</h1>
+          <p className="page-sub">{L('قارن الوسائل واحجز في دقائق.', 'Compare and book in minutes.')}</p></div>
       )}
       <div className="screen" data-screen="transport" style={{ paddingBottom: chosen ? 8 : 24 }}>
         <div className="pad">
-          <Card className="routebox" style={{ padding: '4px 16px' }}>
+          <Card className="routebox" style={{ padding: '4px 18px' }}>
             <button className="rb" onClick={() => setPick('from')} data-testid="from"><span className="dot a" /><div><div className="t-xs">{L('من', 'From')}</div><div className="t-title">{L(PLACES[from].name)}</div></div></button>
             <button className="rb" onClick={() => setPick('to')} data-testid="to"><span className="dot b" /><div><div className="t-xs">{L('إلى', 'To')}</div><div className="t-title">{L(PLACES[to].name)}</div></div></button>
             <button className="swapbtn" onClick={swap} aria-label={L('تبديل', 'Swap')} data-testid="swap"><Ic n="swap" s={19} /></button>
           </Card>
 
-          <div className="row between" style={{ marginTop: 12 }}>
+          <div className="row between" style={{ marginTop: 16 }}>
             <div className="chips">
               {[0, 1, 2].map(d => <Chip key={d} on={day === d} onClick={() => change(setDay)(d)} data-day={d}>{dayLabel(d, L)}</Chip>)}
             </div>
             <div className="row" style={{ gap: 6 }}><Ic n="user" s={18} style={{ color: 'var(--gray)' }} /><Stepper value={pax} onChange={change(setPax)} /></div>
           </div>
-          <div className="t-xs" style={{ marginTop: 6 }}>{dateStr(day, lang)}{after && day === 0 ? L(' · بعد هبوط رحلتك واستلام الأمتعة', ' · after landing and baggage') : ''}</div>
+          <div className="t-xs" style={{ marginTop: 10 }}>{dateStr(day, lang)}{after && day === 0 ? L(' · بعد هبوط رحلتك واستلام الأمتعة', ' · after landing and baggage') : ''}</div>
 
-          <div style={{ marginTop: 12 }}><MapView height={150} here={from} route={route} pins={[{ id: 'to', place: to, color: '#FF6B57', label: '' }]} /></div>
 
-          <div className="sec-h" style={{ marginTop: 18 }}><h2 style={{ fontSize: '1.02rem', color: 'var(--teal)' }}>{L('الوسائل المتاحة', 'Available options')}</h2><span className="t-xs">{options.length} {L('خيارات', 'options')}</span></div>
+          <div className="sec-h" style={{ marginTop: 28 }}><h2>{L('الوسائل المتاحة', 'Available options')}</h2></div>
           {!options.length && <Empty icon="route" title={L('لا يوجد مسار مباشر', 'No route found')} body={L('جرّب وجهة أخرى.', 'Try another destination.')} />}
           <div className="stack">
             {options.map(o => (
               <Card key={o.id} className={`option${sel === o.id ? ' sel' : ''}`} onClick={() => choose(o)} data-option={o.kind}>
-                <IconBox n={optionIcon(o)} tone={sel === o.id ? 'dark' : 'mist'} />
+                <IconBox n={optionIcon(o)} tone={sel === o.id ? 'dark' : 'mist'} size={52} s={26} />
                 <div className="grow">
-                  <div className="t-title">{optionTitle(o, L)}</div>
+                  <div className="row" style={{ gap: 8 }}><span className="t-title">{optionTitle(o, L)}</span>
+                    {o.id === fastest ? <span className="tag coral">{L('الأسرع', 'Fastest')}</span> : o.id === cheapest ? <span className="tag">{L('الأوفر', 'Best price')}</span> : o.id === greenest ? <span className="tag green">{L('أقل أثرًا', 'Greenest')}</span> : null}</div>
                   <div className="t-sub">{fmtDur(o.minutes, lang)} · {o.deps.length ? <>{L('يغادر ', 'Departs ')}<span className="ltr">{fmtTime(o.deps[0], lang)}</span></> : <span style={{ color: '#C8402D' }}>{L('لا رحلات متبقية اليوم', 'No more departures today')}</span>}</div>
-                  <div className="legs">
-                    {o.id === fastest && <span className="tag coral"><Ic n="bolt" s={12} />{L('الأسرع', 'Fastest')}</span>}
-                    {o.id === cheapest && options.length > 1 && <span className="tag">{L('الأوفر', 'Best price')}</span>}
-                    {o.id === greenest && <span className="tag green"><Ic n="leaf" s={12} />{o.co2 === 0 ? L('بلا انبعاثات', 'Zero emissions') : L('أقل أثرًا', 'Lowest impact')}</span>}
-                    {o.legs.every(l => MODES[l.mode].access) && <span className="tag"><Ic n="access" s={12} /></span>}
-                  </div>
-                  {o.legs.length > 1 && <LegPills option={o} />}
+                  {o.legs.length > 1 ? <LegPills option={o} /> : null}
                 </div>
                 <div style={{ textAlign: 'end' }}><div style={{ fontSize: '1.1rem' }}><Money v={o.price} /></div><div className="t-xs">{o.kind === 'car' ? L('للسيارة', 'per car') : L(`لـ ${pax} ركاب`, `for ${pax} pax`)}</div></div>
               </Card>

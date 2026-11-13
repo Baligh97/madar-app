@@ -10,8 +10,8 @@ export default function About() {
       <div className="screen" data-screen="about">
         <div className="pad stack">
           <div className="center" style={{ padding: '14px 0 4px' }}>
-            <div style={{ display: 'inline-block' }}><Symbol size={96} /></div>
-            <div><Wordmark size={44} /></div>
+            <div style={{ display: 'inline-block' }}><Symbol size={96} variant="white" /></div>
+            <div><Wordmark size={44} color="#fff" /></div>
             <div className="lat" style={{ color: 'var(--teal)' }}>MADAR</div>
             <p className="t-sub" style={{ marginTop: 8 }}>{L('رحلتك كاملة… في تطبيق واحد', 'Your whole trip… in one app')}</p>
             <p className="t-xs">{L('الإصدار 1.0 (نسخة تجريبية)', 'Version 1.0 (prototype)')}</p>

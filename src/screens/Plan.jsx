@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useApp, dayLabel, dateStr } from '../store.jsx';
-import { Btn, Card, Chip, Ic, IconBox, Money, Orbits } from '../ui.jsx';
+import { Btn, Card, Chip, Ic, IconBox, Money } from '../ui.jsx';
 import { optionTitle, optionIcon } from '../parts.jsx';
 import { INTERESTS, PLACES, fmtTime, fmtDur, departures } from '../data.js';
 import { generatePlan, swapItem } from '../planner.js';
 import { dateKey, nowMin } from '../logic.js';
+import sea3 from '../img/sea3.jpg';
+import sea5 from '../img/sea5.jpg';
 
 const THINK = [
   ['نحلّل اهتماماتك', 'Reading your interests'], ['نختار أنسب الأنشطة', 'Picking the best activities'],
@@ -66,17 +68,15 @@ export default function Plan() {
   if (mode === 'form' || !plan) return (
     <div className="screen top-safe" data-screen="plan-form">
       <div className="pad">
-        <div className="hero" style={{ marginBottom: 6 }}>
-          <Orbits cx={10} cy={100} step={30} op={0.14} />
-          <div className="kick"><Ic n="ai" s={16} />{L('مخطِّط مَدار الذكي', 'Madar smart planner')}</div>
-          <h3 style={{ marginTop: 4 }}>{L('كيف تحب أن يكون يومك؟', 'How would you like your day?')}</h3>
-          <p>{L('اختر ما يناسبك، ونقترح برنامجًا كاملًا مع التنقل.', 'Choose what suits you and get a full plan, transfers included.')}</p>
+        <div className="hero" style={{ backgroundImage: `url(${sea3})`, minHeight: 210, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <span className="kick" style={{ alignSelf: 'flex-start', marginBottom: 'auto' }}><Ic n="ai" s={15} />{L('المخطِّط الذكي', 'Smart planner')}</span>
+          <h3 style={{ fontSize: '1.75rem' }}>{L('كيف تحب أن يكون يومك؟', 'How would you like your day?')}</h3>
         </div>
 
         <div className="sec"><div className="sec-h"><h2>{L('متى؟', 'When?')}</h2><span className="t-xs">{dateStr(f.day || 0, lang)}</span></div>
           <div className="chips">{[0, 1, 2].map(d => <Chip key={d} on={(f.day || 0) === d} onClick={() => up('day', d)}>{dayLabel(d, L)}</Chip>)}</div></div>
 
-        <div className="sec"><div className="sec-h"><h2>{L('ماذا تحب؟', 'What do you love?')}</h2><span className="t-xs">{L('اختر واحدًا أو أكثر', 'Pick one or more')}</span></div>
+        <div className="sec"><div className="sec-h"><h2>{L('ماذا تحب؟', 'What do you love?')}</h2></div>
           <div className="chips">{INTERESTS.map(i => <Chip key={i.id} icon={i.icon} on={f.interests.includes(i.id)} onClick={() => toggle(i.id)} data-interest={i.id}>{L(i.name)}</Chip>)}</div></div>
 
         <div className="sec"><div className="sec-h"><h2>{L('وتيرة اليوم', 'Pace')}</h2></div>
@@ -103,21 +103,16 @@ export default function Plan() {
     <div className="screen top-safe" data-screen="plan-view">
       <div className="pad">
         <div className="row between">
-          <div><h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--teal)' }}>{L('خطة يومك', 'Your day plan')}</h1>
-            <p className="t-sub">{dayLabel(plan.day, L)} · {dateStr(plan.day, lang)} · {plan.pax} {L('أشخاص', 'people')}</p></div>
+          <div><h1 className="page-title">{L('خطة يومك', 'Your day plan')}</h1>
+            <p className="page-sub">{dayLabel(plan.day, L)} · {dateStr(plan.day, lang)} · {plan.pax} {L('أشخاص', 'people')}</p></div>
           <button className="round" onClick={() => setMode('form')} aria-label={L('تعديل', 'Edit')} data-testid="plan-edit"><Ic n="exchange" s={20} /></button>
         </div>
 
-        <div className="hero" style={{ marginTop: 12, padding: 16 }}>
-          <Orbits cx={8} cy={110} step={28} op={0.14} />
-          <div className="row between" style={{ gap: 6 }}>
-            {[[plan.totals.activities, ['أنشطة', 'activities']], [fmtDur(plan.totals.travelMin, lang), ['تنقّل', 'travel']], [plan.totals.co2 + L(' كجم', ' kg'), ['CO₂', 'CO₂']]].map(([v, n], i) => (
-              <div key={i} className="center grow"><div className="hx" style={{ fontWeight: 800, fontSize: '.95rem', whiteSpace: 'nowrap' }}>{v}</div><div style={{ fontSize: '.7rem', opacity: .8 }}>{L(n)}</div></div>
-            ))}
-            <div className="center grow"><div className="hx ltr" style={{ fontWeight: 800, fontSize: '.95rem' }}>{Math.round(plan.totals.cost).toLocaleString('en-US')}</div><div style={{ fontSize: '.7rem', opacity: .8 }}>{L('ر.س تقديريًا', 'SAR est.')}</div></div>
-          </div>
+        <div className="stats" style={{ margin: '18px 0 26px' }}>
+          <div><b>{plan.totals.activities}</b><span>{L('أنشطة', 'activities')}</span></div>
+          <div><b>{fmtDur(plan.totals.travelMin, lang)}</b><span>{L('تنقّل', 'travel')}</span></div>
+          <div><b className="ltr">{Math.round(plan.totals.cost).toLocaleString('en-US')}</b><span>{L('ر.س تقديريًا', 'SAR est.')}</span></div>
         </div>
-        <div className="row t-xs" style={{ margin: '10px 2px 14px', gap: 6 }}><Ic n="sun" s={15} style={{ color: '#E0A030' }} />{L('الطقس المتوقع: مشمس، 29° (تقديري)', 'Forecast: sunny, 29° (indicative)')}</div>
 
         <div className="tl">
           {plan.items.map((it, idx) => {
@@ -138,14 +133,13 @@ export default function Plan() {
             return <React.Fragment key={it.id + idx}>{free}
               <div className={`tl-item ${it.kind}`} data-item={it.id}>
                 <div className="tl-time">{fmtTime(it.start, lang)}</div>
-                <Card style={{ padding: 13 }}>
+                <Card style={{ padding: 16 }}>
                   <div className="row" style={{ alignItems: 'flex-start' }}>
-                    <IconBox n={it.act.icon} tone={it.kind === 'meal' ? 'coral' : 'mist'} size={42} s={22} />
+                    <IconBox n={it.act.icon} tone={it.kind === 'meal' ? 'coral' : 'mist'} size={48} s={24} />
                     <div className="grow">
                       <div className="t-title">{L(it.act.name)}</div>
                       <div className="t-sub">{L(PLACES[it.act.place].name)} · {fmtDur(it.act.dur, lang)}</div>
-                      <div className="t-sub" style={{ marginTop: 3 }}>{L(it.act.desc)}</div>
-                      <div className="legs"><span className="tag green wrap"><Ic n="ai" s={12} />{L(it.why)}</span><span className="tag"><Money v={it.act.cost} /> {L('للفرد', 'pp')}</span></div>
+                      <div className="why"><Ic n="ai" s={13} /><span>{L(it.why)}</span></div>
                     </div>
                     {it.kind === 'act' && <button className="round sm" onClick={() => swap(it.id)} aria-label={L('استبدال', 'Swap')} data-swap><Ic n="refresh" s={16} /></button>}
                   </div>
@@ -154,11 +148,11 @@ export default function Plan() {
           })}
         </div>
 
-        <div className="row" style={{ marginTop: 8 }}>
-          <Btn kind="ghost" full icon="refresh" onClick={regen} data-testid="regen">{L('خطة أخرى', 'Another plan')}</Btn>
-          <Btn kind="dark" full icon="route" onClick={() => { const l = plan.items.find(i => i.kind === 'leg' && !booked(i)); l ? bookLeg(l) : say(L('كل تنقّلات الخطة محجوزة', 'All transfers are booked')); }} data-testid="book-next">{L('احجز التنقل التالي', 'Book next transfer')}</Btn>
+        <div className="row" style={{ marginTop: 20 }}>
+          <Btn kind="ghost" icon="refresh" onClick={regen} data-testid="regen" style={{ whiteSpace: 'nowrap', paddingInline: 18 }}>{L('خطة أخرى', 'Another plan')}</Btn>
+          <Btn kind="dark" full icon="route" onClick={() => { const l = plan.items.find(i => i.kind === 'leg' && !booked(i)); l ? bookLeg(l) : say(L('كل تنقّلات الخطة محجوزة', 'All transfers are booked')); }} data-testid="book-next" style={{ whiteSpace: 'nowrap', paddingInline: 14 }}>{L('احجز التنقّل', 'Book transfer')}</Btn>
         </div>
-        <p className="t-xs center" style={{ marginTop: 12 }}>{L('الأسعار والأوقات تقديرية، والتنقل محسوب من شبكة مسارات مَدار.', 'Prices and times are estimates; transfers use the Madar route network.')}</p>
+        <p className="t-xs center" style={{ marginTop: 16 }}>{L('الأسعار والأوقات تقديرية.', 'Prices and times are estimates.')}</p>
       </div>
     </div>
   );

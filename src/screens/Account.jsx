@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../store.jsx';
-import { Btn, Card, Ic, IconBox, Orbits, Sheet } from '../ui.jsx';
+import { Btn, Card, Ic, IconBox, Sheet } from '../ui.jsx';
+import dusk from '../img/dusk.jpg';
 
 export default function Account() {
   const { state, set, L, lang, push, say } = useApp();
@@ -16,30 +17,29 @@ export default function Account() {
     <div className="screen top-safe" data-screen="account">
       <div className="pad">
         <div className="row">
-          <div style={{ width: 62, height: 62, borderRadius: 22, background: 'var(--teal)', color: '#fff', display: 'grid', placeItems: 'center', fontFamily: 'var(--head)', fontWeight: 800, fontSize: '1.5rem' }}>{(state.user.name || '?').trim()[0]}</div>
-          <div className="grow"><h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--teal)' }}>{state.user.name}</h1>
+          <div className="avatar" style={{ width: 68, height: 68, fontSize: '1.6rem' }}>{(state.user.name || '?').trim()[0]}</div>
+          <div className="grow"><h1 className="page-title" style={{ fontSize: '1.6rem' }}>{state.user.name}</h1>
             <div className="t-sub">{state.user.plus ? <span className="tag coral"><Ic n="crown" s={12} />{L('عضو مَدار بلس', 'Madar Plus member')}</span> : L('الحساب الأساسي', 'Basic account')}</div></div>
           <button className="round" onClick={() => { setName(state.user.name); setEdit(true); }} aria-label={L('تعديل', 'Edit')}><Ic n="user" s={20} /></button>
         </div>
 
-        {!state.user.plus && <div className="plus" style={{ marginTop: 16 }} onClick={() => push('plus')} data-testid="plus-card">
-          <Orbits cx={8} cy={110} step={30} op={0.14} />
+        {!state.user.plus && <div className="plus" style={{ marginTop: 24, backgroundImage: `url(${dusk})` }} onClick={() => push('plus')} data-testid="plus-card">
           <div className="row"><IconBox n="crown" tone="white" /><div className="grow"><div className="hx" style={{ fontWeight: 700, fontSize: '1.05rem' }}>{L('جرّب مَدار بلس', 'Try Madar Plus')}</div>
             <div style={{ fontSize: '.82rem', opacity: .88 }}>{L('خطط غير محدودة وخصم على التنقل بـ 29 ريالًا للرحلة.', 'Unlimited plans and transfer discounts for SAR 29 per trip.')}</div></div><Ic n="fwd" s={20} /></div>
         </div>}
 
-        <div className="row" style={{ marginTop: 14, gap: 10 }}>
+        <div className="stats" style={{ marginTop: 16 }}>
           {[[trips.length, ['رحلات', 'Trips'], 'ticket'], [state.passes.filter(p => p.status === 'confirmed').length, ['مواقف', 'Parking'], 'parking'], [co2Saved.toFixed(1), ['كجم CO₂ وفّرتها', 'kg CO₂ saved'], 'leaf']].map(([v, n, ic], i) => (
-            <Card key={i} className="grow center" style={{ padding: 12 }}><Ic n={ic} s={20} style={{ color: 'var(--turq)' }} /><div className="num" style={{ color: 'var(--teal)', fontSize: '1.2rem' }}>{v}</div><div className="t-xs">{L(n)}</div></Card>
+            <div key={i}><b>{v}</b><span>{L(n)}</span></div>
           ))}
         </div>
 
-        <Card style={{ marginTop: 14, padding: '4px 14px' }}>
+        <Card style={{ marginTop: 16, padding: '4px 18px' }}>
           <Row icon="ticket" title={L('حجوزاتي وتذاكري', 'My bookings & tickets')} sub={L(`${state.bookings.length + state.passes.length} حجوزات`, `${state.bookings.length + state.passes.length} bookings`)} onClick={() => push('bookings')} tid="my-bookings" />
           <Row icon="crown" title={L('مَدار بلس', 'Madar Plus')} sub={state.user.plus ? L('مفعّلة لهذه الرحلة', 'Active for this trip') : L('غير مفعّلة', 'Not active')} onClick={() => push('plus')} />
         </Card>
 
-        <Card style={{ marginTop: 14, padding: '4px 14px' }}>
+        <Card style={{ marginTop: 16, padding: '4px 18px' }}>
           <Row icon="lang" title={L('اللغة', 'Language')} sub={lang === 'ar' ? 'العربية' : 'English'} onClick={() => set({ lang: lang === 'ar' ? 'en' : 'ar' })} tid="toggle-lang"
             right={<span className="tag">{lang === 'ar' ? 'English' : 'العربية'}</span>} />
           <Row icon="text" title={L('خط أكبر', 'Larger text')} sub={L('لقراءة أسهل', 'Easier to read')} onClick={() => set(s => ({ user: { ...s.user, largeText: !s.user.largeText } }))} tid="toggle-text"
@@ -47,7 +47,7 @@ export default function Account() {
           <Row icon="info" title={L('عن مَدار', 'About Madar')} onClick={() => push('about')} tid="about" />
         </Card>
 
-        <button className="list-row" style={{ marginTop: 8, color: '#C8402D' }} onClick={() => setAsk(true)} data-testid="reset"><Ic n="trash" s={20} /><span className="t-title" style={{ color: '#C8402D' }}>{L('مسح بيانات التجربة والبدء من جديد', 'Reset demo data')}</span></button>
+        <button className="list-row" style={{ marginTop: 8, color: '#FF9484' }} onClick={() => setAsk(true)} data-testid="reset"><Ic n="trash" s={20} /><span className="t-title" style={{ color: '#FF9484' }}>{L('مسح بيانات التجربة والبدء من جديد', 'Reset demo data')}</span></button>
       </div>
 
       <Sheet open={edit} onClose={() => setEdit(false)} title={L('اسمك', 'Your name')}>

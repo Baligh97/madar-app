@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useApp } from '../store.jsx';
-import { Btn, Card, Chip, Ic, IconBox, Orbits, Section, Sheet, Symbol, Empty } from '../ui.jsx';
+import { useApp, dayLabel } from '../store.jsx';
+import { Btn, Card, Chip, Ic, IconBox, Sheet, Empty } from '../ui.jsx';
 import { PlacePicker, optionTitle, optionIcon } from '../parts.jsx';
-import { PLACES, LOTS, ACTIVITIES, lotAvailable, fmtTime, fmtDur, departures } from '../data.js';
+import { PLACES, LOTS, lotAvailable, fmtTime, fmtDur } from '../data.js';
 import { mockFlight, upcoming, shiftForDelay, nearestLot, offsetOf } from '../logic.js';
-import { dayLabel } from '../store.jsx';
+import sea1 from '../img/sea1.jpg';
+import sea2 from '../img/sea2.jpg';
 
 function InstallHint() {
   const { L, state, set } = useApp();
@@ -14,19 +15,15 @@ function InstallHint() {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   if (standalone || state.hideInstall || (!ios && !evt)) return null;
   return (
-    <div className="pad" style={{ marginTop: 12 }}>
-      <div className="install" data-testid="install">
-        <IconBox n="plus" tone="dark" size={40} s={20} />
-        <div className="grow"><div className="t-title">{L('ثبّت مَدار على جوالك', 'Install Madar on your phone')}</div>
-          <div className="t-sub">{ios ? L(<>اضغط زر <b>المشاركة</b> في Safari ثم <b>«إضافة إلى الشاشة الرئيسية»</b>.</>, <>Tap <b>Share</b> in Safari, then <b>“Add to Home Screen”</b>.</>) : L('يعمل كتطبيق كامل بأيقونة على شاشتك.', 'Runs as a full app with its own icon.')}</div></div>
-        {evt ? <Btn small kind="dark" onClick={async () => { evt.prompt(); await evt.userChoice; setEvt(null); }}>{L('تثبيت', 'Install')}</Btn>
-          : <button className="round sm" onClick={() => set({ hideInstall: true })} aria-label="close"><Ic n="x" s={16} /></button>}
-      </div>
+    <div className="install" style={{ marginTop: 30 }} data-testid="install">
+      <IconBox n="plus" tone="dark" size={42} s={20} />
+      <div className="grow"><div className="t-title">{L('ثبّت مَدار على جوالك', 'Install Madar on your phone')}</div>
+        <div className="t-sub">{ios ? L(<>اضغط زر <b>المشاركة</b> ثم <b>«إضافة إلى الشاشة الرئيسية»</b>.</>, <>Tap <b>Share</b>, then <b>“Add to Home Screen”</b>.</>) : L('يعمل كتطبيق كامل بأيقونة على شاشتك.', 'Runs as a full app with its own icon.')}</div></div>
+      {evt ? <Btn small kind="dark" onClick={async () => { evt.prompt(); await evt.userChoice; setEvt(null); }}>{L('تثبيت', 'Install')}</Btn>
+        : <button className="round sm" onClick={() => set({ hideInstall: true })} aria-label="close"><Ic n="x" s={16} /></button>}
     </div>
   );
 }
-
-const ART = ['linear-gradient(135deg,#14B8A6,#0B3C49)', 'linear-gradient(135deg,#FF8B7A,#C8402D)', 'linear-gradient(135deg,#11566A,#072A34)', 'linear-gradient(135deg,#E9B872,#C97B3C)'];
 
 export default function Home() {
   const { state, set, L, lang, go, push, say, notify } = useApp();
@@ -59,119 +56,98 @@ export default function Home() {
     }
   };
   const openNotes = () => { setSheet('notes'); set(s => ({ notes: s.notes.map(n => ({ ...n, unread: false })) })); };
+  const QUICK = [['boat', 'boat', ['قارب', 'Boat']], ['seaplane', 'plane', ['طائرة مائية', 'Seaplane']], ['car', 'car', ['سيارة', 'Car']]];
 
   return (
-    <div className="screen top-safe" data-screen="home">
-      <div className="pad row between">
-        <div>
-          <div className="t-sub">{L('أهلًا بك في البحر الأحمر', 'Welcome to the Red Sea')}</div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--teal)' }}>{L('مرحبًا، ', 'Hello, ')}{state.user.name}</h1>
-        </div>
-        <div className="row" style={{ gap: 10 }}>
+    <div className="screen" data-screen="home">
+      <div className="photo home-hero" style={{ backgroundImage: `url(${sea1})` }}>
+        <div className="row between">
+          <div className="row" style={{ gap: 10 }}>
+            <div className="avatar">{(state.user.name || '?').trim()[0]}</div>
+            <Chip className="soft" onClick={() => setSheet('loc')} data-testid="loc"><Ic n="pin" s={16} style={{ color: 'var(--coral)' }} />{L(PLACES[state.location].short)}<Ic n="down" s={14} /></Chip>
+          </div>
           <button className="round" onClick={openNotes} aria-label={L('التنبيهات', 'Notifications')} data-testid="bell"><Ic n="bell" />{unread && <i className="badge" />}</button>
-          <div style={{ width: 42, height: 42, borderRadius: 14, background: 'var(--teal)', display: 'grid', placeItems: 'center' }}><Symbol size={27} variant="white" /></div>
         </div>
-      </div>
-
-      <div className="pad" style={{ marginTop: 10 }}>
-        <Chip className="soft" onClick={() => setSheet('loc')} data-testid="loc"><Ic n="pin" s={16} style={{ color: 'var(--coral)' }} />{L(PLACES[state.location].name)}<Ic n="down" s={14} /></Chip>
-      </div>
-
-      <InstallHint />
-
-      {/* flight */}
-      <div className="pad" style={{ marginTop: 12 }}>
-        {f ? (
-          <Card data-testid="flight-card">
-            <div className="row">
-              <IconBox n="flight" tone={f.delay ? 'coral' : 'mist'} />
-              <div className="grow">
-                <div className="t-title">{L('رحلتك ', 'Flight ')}<span className="ltr">{f.no}</span>{L(' من ', ' from ')}{L(f.from)}</div>
-                <div className="t-sub">{L('الهبوط ', 'Lands ')}<b className="ltr">{fmtTime(f.eta + f.delay, lang)}</b>{f.delay ? <span style={{ color: '#C8402D' }}>{L(` · متأخرة ${f.delay} د`, ` · ${f.delay} min late`)}</span> : L(' · في موعدها', ' · on time')}</div>
-              </div>
-              <span className={`tag ${f.delay ? 'warn' : 'green'}`}>{f.delay ? L('متأخرة', 'Delayed') : L('في الموعد', 'On time')}</span>
-            </div>
-            <div className="hr" />
-            <div className="row between">
-              <Btn small kind="dark" icon="route" onClick={() => push('transport', { from: 'rsi', after: f.eta + f.delay + 30 })} data-testid="flight-book">{L('احجز تنقّلك من المطار', 'Book airport transfer')}</Btn>
-              <button className="link" onClick={delay} data-testid="sim-delay">{L('محاكاة تأخير', 'Simulate delay')}</button>
-            </div>
-          </Card>
-        ) : (
-          <Card onClick={() => setSheet('flight')} className="row" data-testid="flight-link">
-            <IconBox n="flight" tone="mist" />
-            <div className="grow"><div className="t-title">{L('اربط رحلتك الجوية', 'Link your flight')}</div><div className="t-sub">{L('نرتّب تنقّلك على موعد الهبوط، ونعدّله إن تأخرت الرحلة.', 'We time your transfer to landing and adjust if the flight is late.')}</div></div>
-            <Ic n="fwd" s={18} style={{ color: '#93A1A6' }} />
-          </Card>
-        )}
-      </div>
-
-      {/* AI planner */}
-      <div className="pad" style={{ marginTop: 12 }}>
-        <div className="hero">
-          <Orbits cx={12} cy={96} step={34} op={0.14} />
-          <div className="kick"><Ic n="ai" s={16} />{L('مخطِّط مَدار الذكي', 'Madar smart planner')}</div>
-          <h3 style={{ marginTop: 4 }}>{state.plan ? L('خطة يومك جاهزة', 'Your day plan is ready') : L('خطّط يومك في ثوانٍ', 'Plan your day in seconds')}</h3>
-          <p>{state.plan ? L(`${state.plan.totals.activities} أنشطة مع التنقل بينها.`, `${state.plan.totals.activities} activities with transfers.`) : L('أخبرنا بما تحب، ونرتّب لك يومك مع التنقل والحجوزات.', 'Tell us what you love — we arrange your day, transfers included.')}</p>
-          <Btn small onClick={() => go('plan')} style={{ marginTop: 12 }} data-testid="hero-plan">{state.plan ? L('اعرض خطتي', 'View my plan') : L('ابدأ التخطيط', 'Start planning')}</Btn>
+        <div style={{ marginTop: 'auto' }}>
+          <div className="home-hello" data-testid="hello">{L('مرحبًا، ', 'Hello, ')}{state.user.name}</div>
+          <h1 className="home-title">{L(<>إلى أين<br />اليوم؟</>, <>Where to<br />today?</>)}</h1>
+          <button className="search glass" onClick={() => go('transport')} data-testid="search">
+            <Ic n="search" s={20} /><span className="grow">{L('اختر وجهتك واحجز تنقّلك', 'Pick a destination and book')}</span><i className="go"><Ic n="fwd" s={20} /></i>
+          </button>
         </div>
       </div>
 
       <div className="pad">
-        <Section title={L('احجز تنقّلك', 'Book a transfer')} action={<button className="link" onClick={() => go('transport')}>{L('عرض الكل', 'See all')}</button>}>
-          <div className="svc">
-            {[['boat', 'boat', ['قارب', 'Boat'], 'coral'], ['seaplane', 'plane', ['طائرة مائية', 'Seaplane'], 'mist'], ['car', 'car', ['سيارة', 'Car'], 'mist']].map(([m, ic, n, tone]) => (
-              <button key={m} onClick={() => push('transport', { mode: m })} data-svc={m}><IconBox n={ic} tone={tone} s={32} />{L(n)}</button>
-            ))}
-            <button onClick={() => go('parking')} data-svc="parking"><IconBox n="parking" tone="mist" s={32} />{L('مواقف', 'Parking')}</button>
-          </div>
-        </Section>
+        <div className="quick">
+          {QUICK.map(([m, ic, n]) => <button key={m} onClick={() => push('transport', { mode: m })} data-svc={m}><i className="glass"><Ic n={ic} s={28} w={1.6} /></i>{L(n)}</button>)}
+          <button onClick={() => go('parking')} data-svc="parking"><i className="glass"><Ic n="parking" s={28} w={1.6} /></i>{L('مواقف', 'Parking')}</button>
+        </div>
 
-        <Section title={L('رحلتك القادمة', 'Your next trip')} action={state.bookings.length ? <button className="link" onClick={() => push('bookings')}>{L('كل الحجوزات', 'All bookings')}</button> : null}>
-          {next ? (
-            <Card className="row" onClick={() => push('ticket', { id: next.id })} data-testid="next-trip">
-              <IconBox n={optionIcon(next.option)} tone="coral" />
-              <div className="grow">
-                <div className="t-title">{optionTitle(next.option, L)}{L(' إلى ', ' to ')}{L(PLACES[next.to].name)}</div>
-                <div className="t-sub">{dayLabel(offsetOf(next.date), L)} <span className="ltr">{fmtTime(next.depart, lang)}</span> · {fmtDur(next.option.minutes, lang)}</div>
+        {next && <section className="sec">
+          <div className="sec-h"><h2>{L('رحلتك القادمة', 'Your next trip')}</h2><button className="link" onClick={() => push('bookings')}>{L('كل الحجوزات', 'All bookings')}</button></div>
+          <Card className="row" onClick={() => push('ticket', { id: next.id })} data-testid="next-trip">
+            <IconBox n={optionIcon(next.option)} tone="coral" size={52} s={26} />
+            <div className="grow">
+              <div className="t-title">{L(PLACES[next.to].name)}</div>
+              <div className="t-sub">{dayLabel(offsetOf(next.date), L)} <span className="ltr">{fmtTime(next.depart, lang)}</span> · {optionTitle(next.option, L)}</div>
+            </div>
+            <span className={`tag ${next.shifted ? 'warn' : 'green'}`}>{next.shifted ? L('عُدّل الموعد', 'Rescheduled') : L('مؤكَّد', 'Confirmed')}</span>
+          </Card>
+        </section>}
+
+        <section className="sec">
+          <div className="hero" style={{ backgroundImage: `url(${sea2})`, minHeight: 230, display: 'flex', flexDirection: 'column' }}>
+            <span className="kick" style={{ alignSelf: 'flex-start' }}><Ic n="ai" s={15} />{L('المخطِّط الذكي', 'Smart planner')}</span>
+            <div style={{ marginTop: 'auto' }}>
+              <h3>{state.plan ? L('خطة يومك جاهزة', 'Your day plan is ready') : L('خطّط يومك في ثوانٍ', 'Plan your day in seconds')}</h3>
+              <p style={{ marginTop: 4 }}>{state.plan ? L(`${state.plan.totals.activities} أنشطة مع التنقل بينها.`, `${state.plan.totals.activities} activities with transfers.`) : L('أخبرنا بما تحب، ونرتّب لك اليوم كله.', 'Tell us what you love — we arrange the day.')}</p>
+              <Btn small kind="white" onClick={() => go('plan')} style={{ marginTop: 14 }} data-testid="hero-plan">{state.plan ? L('اعرض خطتي', 'View my plan') : L('ابدأ التخطيط', 'Start planning')}</Btn>
+            </div>
+          </div>
+        </section>
+
+        <section className="sec stack">
+          {f ? (
+            <Card data-testid="flight-card">
+              <div className="row">
+                <IconBox n="flight" tone={f.delay ? 'coral' : 'mist'} size={52} s={26} />
+                <div className="grow">
+                  <div className="t-title"><span className="ltr">{f.no}</span>{L(' من ', ' from ')}{L(f.from)}</div>
+                  <div className="t-sub">{L('الهبوط ', 'Lands ')}<b className="ltr">{fmtTime(f.eta + f.delay, lang)}</b></div>
+                </div>
+                <span className={`tag ${f.delay ? 'warn' : 'green'}`}>{f.delay ? L(`متأخرة ${f.delay} د`, `${f.delay} min late`) : L('في الموعد', 'On time')}</span>
               </div>
-              <span className={`tag ${next.shifted ? 'warn' : ''}`}>{next.shifted ? L('عُدّل الموعد', 'Rescheduled') : L('مؤكَّد', 'Confirmed')}</span>
+              <div className="row between" style={{ marginTop: 16 }}>
+                <Btn small kind="dark" onClick={() => push('transport', { from: 'rsi', after: f.eta + f.delay + 30 })} data-testid="flight-book">{L('احجز تنقّلك من المطار', 'Book airport transfer')}</Btn>
+                <button className="link" onClick={delay} data-testid="sim-delay">{L('محاكاة تأخير', 'Simulate delay')}</button>
+              </div>
             </Card>
           ) : (
-            <Card className="row"><IconBox n="ticket" tone="sand" /><div className="grow"><div className="t-title">{L('لا توجد رحلات قادمة', 'No upcoming trips')}</div><div className="t-sub">{L('احجز أول تنقّل لك وستظهر تذكرتك هنا.', 'Book your first transfer and the ticket shows here.')}</div></div></Card>
+            <Card onClick={() => setSheet('flight')} className="row" data-testid="flight-link">
+              <IconBox n="flight" tone="mist" size={52} s={26} />
+              <div className="grow"><div className="t-title">{L('اربط رحلتك الجوية', 'Link your flight')}</div><div className="t-sub">{L('نضبط تنقّلك على موعد الهبوط.', 'We time your transfer to landing.')}</div></div>
+              <Ic n="fwd" s={18} style={{ color: 'var(--gray)' }} />
+            </Card>
           )}
-        </Section>
-
-        <Section title={L('أقرب موقف إليك', 'Nearest parking')} action={<button className="link" onClick={() => go('parking')}>{L('كل المواقف', 'All parking')}</button>}>
           <Card className="row" onClick={() => go('parking')} data-testid="near-lot">
-            <IconBox n="parking" tone="mist" />
-            <div className="grow"><div className="t-title">{L(lot.name)}</div><div className="t-sub">{L(`${lot.walk} دقائق مشيًا`, `${lot.walk} min walk`)} · <span className="live">{L('مباشر', 'Live')}</span></div></div>
+            <IconBox n="parking" tone="mist" size={52} s={26} />
+            <div className="grow"><div className="t-title">{L(lot.name)}</div><div className="t-sub"><span className="live">{L('مباشر', 'Live')}</span></div></div>
             <div className="center"><div className="num" style={{ color: free > 15 ? 'var(--turq)' : 'var(--coral)' }}>{free}</div><div className="t-xs">{L('موقفًا متاحًا', 'free spots')}</div></div>
           </Card>
-        </Section>
-
-        <Section title={L('اكتشف الوجهة', 'Discover')}>
-          <div className="hscroll">
-            {ACTIVITIES.slice(0, 8).map((a, i) => (
-              <button key={a.id} className="disc" onClick={() => go('plan')}>
-                <div className="disc-art" style={{ background: ART[i % 4] }}><Orbits cx={10} cy={110} step={20} op={0.2} dots={false} /><Ic n={a.icon} s={38} w={1.5} /></div>
-                <div className="disc-b"><div className="t-title" style={{ fontSize: '.84rem' }}>{L(a.name)}</div><div className="t-xs">{L(PLACES[a.place].short)} · {fmtDur(a.dur, lang)}</div></div>
-              </button>
-            ))}
-          </div>
-        </Section>
+        </section>
+        <InstallHint />
       </div>
 
       <PlacePicker open={sheet === 'loc'} onClose={() => setSheet(null)} title={L('أين أنت الآن؟', 'Where are you now?')} current={state.location} onPick={id => { set({ location: id }); say(L('تم تحديث موقعك', 'Location updated')); }} />
       <Sheet open={sheet === 'flight'} onClose={() => setSheet(null)} title={L('اربط رحلتك الجوية', 'Link your flight')}>
-        <p className="t-sub" style={{ marginBottom: 12 }}>{L('اكتب رقم رحلتك لنجهّز تنقّلك على موعد هبوطك.', 'Enter your flight number so we can time your transfer.')}</p>
+        <p className="t-sub" style={{ marginBottom: 14 }}>{L('اكتب رقم رحلتك لنجهّز تنقّلك على موعد هبوطك.', 'Enter your flight number so we can time your transfer.')}</p>
         <input className="field ltr" placeholder="SV1543" value={fno} onChange={e => setFno(e.target.value)} maxLength={8} style={{ textAlign: 'center', fontFamily: 'var(--head)', fontWeight: 700, letterSpacing: '.08em' }} data-testid="fno" />
-        <div style={{ height: 14 }} />
+        <div style={{ height: 16 }} />
         <Btn full onClick={linkFlight} data-testid="fno-go">{L('اربط الرحلة', 'Link flight')}</Btn>
       </Sheet>
       <Sheet open={sheet === 'notes'} onClose={() => setSheet(null)} title={L('التنبيهات', 'Notifications')}>
         {state.notes.length ? state.notes.map(n => (
-          <div className="opt" key={n.id}><IconBox n={n.icon} tone="mist" size={42} s={21} /><div className="grow"><div className="t-title">{n.title}</div><div className="t-sub">{n.body}</div></div></div>
+          <div className="opt" key={n.id}><IconBox n={n.icon} tone="mist" size={44} s={21} /><div className="grow"><div className="t-title">{n.title}</div><div className="t-sub">{n.body}</div></div></div>
         )) : <Empty icon="bell" title={L('لا توجد تنبيهات', 'No notifications')} body={L('سنخبرك هنا بكل جديد عن رحلتك.', 'Updates about your trip will appear here.')} />}
       </Sheet>
     </div>

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useApp } from '../store.jsx';
-import { Btn, Card, Ic, IconBox, Money, Orbits, TopBar } from '../ui.jsx';
+import { Btn, Card, Ic, IconBox, Money, TopBar } from '../ui.jsx';
 import { PLUS_PRICE } from '../data.js';
+import dusk from '../img/dusk.jpg';
 
 const PERKS = [
   ['ai', ['خطط غير محدودة', 'Unlimited plans'], ['أعد توليد خطة يومك كما تشاء.', 'Re-plan your day as often as you like.']],
@@ -17,13 +18,12 @@ export default function Plus() {
       <TopBar title={L('مَدار بلس', 'Madar Plus')} />
       <div className="screen" data-screen="plus">
         <div className="pad stack">
-          <div className="plus" style={{ padding: 22 }}>
-            <Orbits cx={10} cy={100} step={34} op={0.14} />
+          <div className="plus" style={{ padding: 26, minHeight: 240, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', backgroundImage: `url(${dusk})` }}>
             <IconBox n="crown" tone="white" size={54} s={28} />
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: 10 }}>{L('رحلة أسهل بمزايا أكثر', 'An easier trip, with more perks')}</h2>
+            <h2 style={{ fontSize: '1.7rem', fontWeight: 800, marginTop: 12, color: '#fff' }}>{L('رحلة أسهل بمزايا أكثر', 'An easier trip, with more perks')}</h2>
             <div style={{ marginTop: 6, fontSize: '1.6rem', fontFamily: 'var(--head)', fontWeight: 800 }}><span className="ltr">{PLUS_PRICE}</span> <small style={{ fontSize: '.5em', fontWeight: 500 }}>{L('ر.س للرحلة الواحدة', 'SAR per trip')}</small></div>
           </div>
-          <Card style={{ padding: '4px 14px' }}>
+          <Card style={{ padding: '4px 18px' }}>
             {PERKS.map(([ic, t, d]) => <div className="list-row" key={ic}><IconBox n={ic} tone="mist" size={40} s={20} /><div className="grow"><div className="t-title">{L(t)}</div><div className="t-sub">{L(d)}</div></div><Ic n="check" s={18} style={{ color: 'var(--ok)' }} /></div>)}
           </Card>
           {on ? <>

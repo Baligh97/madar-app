@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useApp } from '../store.jsx';
-import { Btn, Ic, Orbits, Symbol, Wordmark } from '../ui.jsx';
+import { Btn, Ic, Symbol, Wordmark } from '../ui.jsx';
+import sea1 from '../img/sea1.jpg';
+import sea2 from '../img/sea2.jpg';
+import sea3 from '../img/sea3.jpg';
+import night from '../img/night.jpg';
 
 export function Splash() {
   return (
-    <div className="splash">
-      <Orbits cx={50} cy={48} step={62} op={0.1} />
+    <div className="splash" style={{ backgroundImage: `url(${sea3})` }}>
       <div className="logo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
         <Symbol size={150} variant="white" />
         <Wordmark color="#fff" size={62} />
@@ -17,9 +20,9 @@ export function Splash() {
 }
 
 const SLIDES = [
-  { icon: 'boat', t: ['احجز تنقّلك في دقائق', 'Book transfers in minutes'], d: ['قارب سريع، طائرة مائية أو سيارة كهربائية. قارن واحجز وادفع من مكان واحد، وتذكرتك تصلك فورًا.', 'Speedboat, seaplane or electric car. Compare, book and pay in one place — your ticket arrives instantly.'] },
-  { icon: 'ai', t: ['يومك يرتّبه الذكاء الاصطناعي', 'Your day, planned by AI'], d: ['أخبرنا بما تحب، ونقترح لك برنامجًا كاملًا مع أوقات التنقل بين الجزر والمنتجعات.', 'Tell us what you love and get a full-day plan, including travel times between islands and resorts.'] },
-  { icon: 'parking', t: ['اعرف أين توقف سيارتك', 'Know where to park'], d: ['المواقف المتاحة لحظة بلحظة عند المطار والمراسي ونقاط الانطلاق، واحجز موقفك قبل أن تصل.', 'Live availability at the airport, marinas and departure points — reserve your spot before you arrive.'] },
+  { img: sea1, t: ['احجز تنقّلك في دقائق', 'Book transfers in minutes'], d: ['قارب سريع أو طائرة مائية أو سيارة كهربائية. قارن واحجز وادفع من مكان واحد.', 'Speedboat, seaplane or electric car. Compare, book and pay in one place.'] },
+  { img: sea3, t: ['يومك يرتّبه الذكاء الاصطناعي', 'Your day, planned by AI'], d: ['أخبرنا بما تحب، ونقترح برنامجًا كاملًا مع أوقات التنقل بين الجزر.', 'Tell us what you love and get a full-day plan with travel times.'] },
+  { img: sea2, t: ['اعرف أين توقف سيارتك', 'Know where to park'], d: ['المواقف المتاحة لحظة بلحظة، واحجز موقفك قبل أن تصل.', 'Live availability — reserve your spot before you arrive.'] },
 ];
 
 export default function Onboarding() {
@@ -32,24 +35,20 @@ export default function Onboarding() {
     notify(L('أهلًا بك في مَدار', 'Welcome to Madar'), L('ابدأ بربط رحلتك الجوية أو خطّط يومك الآن.', 'Start by linking your flight, or plan your day now.'), 'ai');
   };
   return (
-    <div className="ob">
-      <div className="ob-art">
-        <Orbits cx={18} cy={88} step={46} op={0.12} />
-        <button className="chip" style={{ position: 'absolute', top: 'calc(var(--sat) + 16px)', insetInlineEnd: 18, background: 'rgba(255,255,255,.14)', color: '#fff', boxShadow: 'none' }}
-          onClick={() => set({ lang: lang === 'ar' ? 'en' : 'ar' })} data-testid="lang"><Ic n="world" s={16} />{lang === 'ar' ? 'English' : 'العربية'}</button>
-        {last
-          ? <div style={{ position: 'relative', textAlign: 'center' }}><Symbol size={130} variant="white" /></div>
-          : <div className="ob-icon" key={i}><Ic n={SLIDES[i].icon} s={78} w={1.5} /></div>}
+    <div className="ob" style={{ backgroundImage: `url(${last ? night : SLIDES[i].img})` }}>
+      <div className="ob-top">
+        <div className="row" style={{ gap: 8 }}><Symbol size={34} variant="white" /><Wordmark color="#fff" size={26} /></div>
+        <button className="chip soft" onClick={() => set({ lang: lang === 'ar' ? 'en' : 'ar' })} data-testid="lang"><Ic n="world" s={16} />{lang === 'ar' ? 'English' : 'العربية'}</button>
       </div>
-      <div className="ob-body">
+      <div className="ob-panel glass">
         {last ? <>
           <h2>{L('بماذا نناديك؟', 'What should we call you?')}</h2>
-          <p style={{ minHeight: 0, marginBottom: 14 }}>{L('نستخدم اسمك للترحيب بك وعلى تذاكرك فقط.', 'We only use your name to greet you and on your tickets.')}</p>
+          <p style={{ minHeight: 0, marginBottom: 18 }}>{L('نستخدم اسمك للترحيب بك وعلى تذاكرك فقط.', 'We only use your name to greet you and on your tickets.')}</p>
           <input className="field" placeholder={L('اسمك الأول', 'Your first name')} value={name} onChange={e => setName(e.target.value)} maxLength={24} data-testid="name" />
           <div style={{ height: 18 }} />
           <Btn full onClick={finish} data-testid="start">{L('ابدأ رحلتك', 'Start your journey')}</Btn>
         </> : <>
-          <h2>{L(SLIDES[i].t)}</h2>
+          <h2 key={i}>{L(SLIDES[i].t)}</h2>
           <p>{L(SLIDES[i].d)}</p>
           <div className="dots">{SLIDES.map((_, k) => <i key={k} className={k === i ? 'on' : ''} />)}<i /></div>
           <div className="row">

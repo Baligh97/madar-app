@@ -1,18 +1,17 @@
-# يبني ملف APK للأندرويد وينشره كإصدار (Release)، وينشر نسخة الويب (للآيفون) على فرع gh-pages
+# يبني ملف APK للأندرويد وينشر نسخة الويب (للآيفون) على GitHub Pages عند كل رفع للمستودع
 name: Build Madar
 on:
   push: { branches: [main] }
   workflow_dispatch:
-permissions: { contents: write }
-concurrency: { group: build, cancel-in-progress: false }
+permissions: { contents: read, pages: write, id-token: write }
 jobs:
   android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21 }
       - run: npm ci
       - run: npm run build
@@ -20,28 +19,18 @@ jobs:
       - run: chmod +x gradlew && ./gradlew assembleDebug
         working-directory: android
       - run: cp android/app/build/outputs/apk/debug/app-debug.apk madar.apk
-      - name: Publish release
-        env: { GH_TOKEN: "${{ github.token }}" }
-        run: |
-          TAG="v1.0.${{ github.run_number }}"
-          gh release create "$TAG" madar.apk --title "مَدار $TAG" --notes "ملف APK لأجهزة أندرويد — نسخة تجريبية لمشروع مقرر ريادة الأعمال." --latest
-      - name: Push APK to apk branch
-        run: |
-          mkdir out && cp madar.apk out/ && cd out
-          git init -q -b apk && git add madar.apk
-          git -c user.name="madar-bot" -c user.email="bot@users.noreply.github.com" commit -qm "APK ${{ github.sha }}"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" apk
+      - uses: actions/upload-artifact@v4
+        with: { name: madar-android-apk, path: madar.apk }
   web:
     runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run build
-      - name: Publish to gh-pages
-        run: |
-          cd dist && touch .nojekyll
-          git init -q -b gh-pages && git add -A
-          git -c user.name="madar-bot" -c user.email="bot@users.noreply.github.com" commit -qm "Web ${{ github.sha }}"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+      - id: deploy
+        uses: actions/deploy-pages@v4

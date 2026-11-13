@@ -13,8 +13,8 @@ const srv = http.createServer((q, r) => { let p = path.join(__dirname, 'dist', d
   p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); });
   p.on('pageerror', e => errs.push('pageerror: ' + e.message));
   let n = 0; const shot = async (name) => { await p.waitForTimeout(350); await p.screenshot({ path: `shots/${String(++n).padStart(2, '0')}-${name}.png` }); };
-  const tap = async (sel) => { await p.locator(sel).first().click(); await p.waitForTimeout(250); };
-  const step = async (name, fn) => { try { await fn(); console.log('ok  ', name); } catch (e) { console.log('FAIL', name, '-', e.message.split('\n')[0]); errs.push('step ' + name); await p.screenshot({ path: `shots/FAIL-${name}.png` }); } };
+  const tap = async (sel) => { await p.locator(sel).first().click(sel === '.scrim' ? { timeout: 6000, position: { x: 30, y: 30 } } : { timeout: 6000 }); await p.waitForTimeout(250); };
+  const step = async (name, fn) => { try { await fn(); console.log('ok  ', name); } catch (e) { console.log('FAIL', name, '-', e.message.split('\n').slice(0,12).join(' | ')); errs.push('step ' + name); await p.screenshot({ path: `shots/FAIL-${name}.png` }); } };
 
   await p.goto('http://localhost:4173/'); await p.waitForTimeout(500); await shot('splash');
   await p.waitForTimeout(1500);
@@ -37,7 +37,7 @@ const srv = http.createServer((q, r) => { let p = path.join(__dirname, 'dist', d
     await tap('[data-testid=my-bookings]'); await shot('bookings'); await tap('[data-testid=tab-park]'); await shot('bookings-parking'); await tap('.topbar .round'); });
   await step('english + large text', async () => { await tap('[data-testid=toggle-lang]'); await shot('account-en'); await tap('[data-tab=home]'); await shot('home-en'); await tap('[data-tab=transport]'); await shot('transport-en'); await tap('[data-tab=plan]'); await shot('plan-en'); await tap('[data-tab=account]'); await tap('[data-testid=toggle-text]'); await shot('large-text-en'); await tap('[data-testid=toggle-text]'); await tap('[data-testid=toggle-lang]'); });
   await step('cancel booking', async () => { await tap('[data-testid=my-bookings]'); await tap('[data-booking]'); await p.locator('[data-testid=cancel]').scrollIntoViewIfNeeded(); await tap('[data-testid=cancel]'); await tap('[data-testid=cancel-yes]'); await p.locator('[data-screen=ticket]').evaluate(e => e.scrollTo(0, 0)); await shot('ticket-cancelled'); });
-  await step('persistence after reload', async () => { await p.reload(); await p.waitForTimeout(2300); await p.waitForSelector('[data-screen=home]'); const t = await p.locator('[data-screen=home] h1').innerText(); if (!t.includes('ريماس')) throw new Error('name lost: ' + t); await shot('reloaded'); });
+  await step('persistence after reload', async () => { await p.reload(); await p.waitForTimeout(2300); await p.waitForSelector('[data-screen=home]'); const t = await p.locator('[data-testid=hello]').innerText(); if (!t.includes('ريماس')) throw new Error('name lost: ' + t); await shot('reloaded'); });
   // small Android-size check
   const c2 = await b.newContext({ viewport: { width: 360, height: 740 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const p2 = await c2.newPage(); p2.on('pageerror', e => errs.push('pageerror(android): ' + e.message));
